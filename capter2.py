@@ -1,6 +1,9 @@
 import  os
 a="hello"
 b=[x**2 for x in  range(8) if not x%2]
+print("1213")
+a='''nidhka\ngbdg'''
+print(a)
 adict={"host":"earth"}
 print(b[-1:1])
 print((a*2)[3:-1])
