@@ -3,9 +3,10 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import  tensorflow as tf
 import numpy as np
 import xlrd
+import matplotlib.pyplot as plt
 # a=numpy.array([[1,2,3],[2,2,3],[3,3,4]])
 # print(a[a>2])
-
+# print(np.arange(4).reshape(4,1))
 def t1():
     a = tf.constant(2)
     b = tf.constant(3)
@@ -38,6 +39,7 @@ file= 'data/fire_theft.xls'
 book=xlrd.open_workbook(file, encoding_override='utf-8')
 sheet=book.sheet_by_index(0)
 data=np.asarray([sheet.row_values(i) for i in range(1,sheet.nrows)],dtype=np.float32)
+n_samples=sheet.nrows-1
 # print(data)
 
 # t1()
@@ -50,14 +52,22 @@ b=tf.get_variable('bias',shape=[],initializer=tf.zeros_initializer())
 y_pred=w*X+b
 loss=tf.square(Y-y_pred,name='loss')
 optimizer=tf.train.GradientDescentOptimizer(learning_rate=1e-3).minimize(loss)
-init=tf.global_variables_initializer()
+# init=tf.global_variables_initializer()
+init=tf.variables_initializer([w,b])
 with tf.Session() as sess:
-    writer=tf.summary.FileWriter("./linear",graph=sess.graph)
     sess.run(init)
-    for i in  range(1000):
+    writer=tf.summary.FileWriter("./linear",graph=sess.graph)
+    for i in  range(100):
         total_loss=0
         for x,y in data:
             _,l=sess.run([optimizer,loss],feed_dict={X:x,Y:y})
             total_loss+=l
-        print("Epoch{0}:{1}".format(i,total_loss))
+        print("Epoch{0}:{1}".format(i,total_loss/n_samples))
+    writer.close()
+    w,b=sess.run([w,b])
+X,Y=data.T[0],data.T[1]
+plt.plot(X,Y,'bo',label='reaL DATA')
+plt.plot(X,X*w+b,'r',label='predicted')
+plt.legend()
+plt.show()
 
