@@ -4,7 +4,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 import time
-import numpy as np
+
 learn_rate=0.01
 batch_size=128
 n_epochs=30
@@ -16,7 +16,15 @@ b=tf.Variable(tf.zeros([1,10]),name='bias')
 logits=tf.matmul(X,w)+b
 entropy=tf.nn.softmax_cross_entropy_with_logits(logits=logits,labels=Y,name='loss')
 loss=tf.reduce_mean(entropy)
-optimizer=tf.train.AdamOptimizer(learn_rate).minimize(loss)
+     # +tf.contrib.layers.l2_regularizer(0.01)(w)
+global_step=tf.Variable(0)
+learn_rate=tf.train.exponential_decay(learn_rate,global_step,n_epochs,0.98,staircase=True)
+optimizer=tf.train.AdamOptimizer(learn_rate).minimize(loss,global_step=global_step)
+# optimizer=tf.train.AdamOptimizer(learn_rate)
+# grads=optimizer.compute_gradients(loss,[w,b])
+# for i in grads:
+#     print(i[0].eval(),i[1].eval())
+# a=optimizer.apply_gradients(grads)
 with tf.Session()as  sess:
     writer=tf.summary.FileWriter('./graphs/mnist',sess.graph)
     start_time=time.time()
